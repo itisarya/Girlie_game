@@ -213,6 +213,7 @@
 
     let score = 0;
       combo = 0;
+      gameRunning = true;
     let combo = 0;
     let timeLeft = 30;
     let gameRunning = false;
@@ -270,7 +271,6 @@
     }
 
     function startGame() {
-      gameRunning = true;
       clearInterval(moveInterval);
       clearInterval(countdownInterval);
 
