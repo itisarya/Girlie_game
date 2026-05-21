@@ -46,6 +46,33 @@
       font-weight: bold;
     }
 
+    .combo-popup {
+      position: absolute;
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #ff5c9f;
+      pointer-events: none;
+      animation: floatUp 1s ease forwards;
+      text-shadow: 0 2px 8px rgba(255,255,255,0.8);
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.8);
+      }
+
+      20% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-60px) scale(1.2);
+      }
+    }
+
     .game-area {
       width: 500px;
       height: 400px;
@@ -108,6 +135,39 @@
       color: #5c3b52;
       font-weight: bold;
     }
+  @media (max-width: 600px) {
+      body {
+        padding: 16px;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .game-container {
+        width: 100%;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .game-area {
+        width: 100%;
+        max-width: 100%;
+        height: 320px;
+      }
+
+      .box {
+        width: 50px;
+        height: 50px;
+      }
+
+      button,
+      select {
+        width: 100%;
+        margin-top: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -152,13 +212,15 @@
     document.querySelector('.game-container').insertBefore(difficultySelect, gameArea);
 
     let score = 0;
+      combo = 0;
+    let combo = 0;
     let timeLeft = 30;
     let gameRunning = false;
     let moveInterval;
     let countdownInterval;
 
     let highScore = localStorage.getItem('highScore') || 0;
-    highScoreText.textContent = '🏆 High Score Girlie: ' + highScore;
+    highScoreText.textContent = '🏆 High Score: ' + highScore;
 
     function moveBox() {
       const maxX = gameArea.clientWidth - box.clientWidth;
@@ -175,6 +237,8 @@
       if (!gameRunning) return;
 
       score++;
+      combo++;
+
       scoreText.textContent = 'Score: ' + score;
 
       if (score > highScore) {
@@ -183,8 +247,27 @@
         highScoreText.textContent = '🏆 High Score: ' + highScore;
       }
 
+      if (combo % 5 === 0) {
+        showComboPopup(combo);
+      }
+
       moveBox();
     });
+
+    function showComboPopup(comboCount) {
+      const popup = document.createElement('div');
+      popup.className = 'combo-popup';
+      popup.textContent = '💖 Cute Combo x' + comboCount + '!';
+
+      popup.style.left = Math.random() * 250 + 80 + 'px';
+      popup.style.top = Math.random() * 150 + 80 + 'px';
+
+      gameArea.appendChild(popup);
+
+      setTimeout(() => {
+        popup.remove();
+      }, 1000);
+    }
 
     function startGame() {
       clearInterval(moveInterval);
