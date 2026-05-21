@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catch The Box Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffd6e8, #ffeecf);
+      color: #5c3b52;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .game-container {
+      text-align: center;
+      background: rgba(255,255,255,0.55);
+      padding: 30px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(255, 182, 193, 0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+
+    #score,
+    select,
+    button {
+      font-size: 1rem;
+    }
+
+    #score {
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .game-area {
+      width: 500px;
+      height: 400px;
+      background: rgba(255,255,255,0.45);
+      border: 3px dashed #ff9ec7;
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .box {
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #ff9ec7, #ff77aa);
+      position: absolute;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      box-shadow: 0 6px 12px rgba(255, 119, 170, 0.4);
+      border: 3px solid white;
+    }
+
+    .box::after {
+      content: '💖';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .box:hover {
+      transform: scale(1.15) rotate(8deg);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff9ec7, #ff77aa);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 5px 14px rgba(255, 119, 170, 0.35);
+      transition: transform 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    select {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid #ffb6d5;
+      background: white;
+      color: #5c3b52;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎀 Catch The Heart</h1>
+    <div id="score">Score: 0</div>
+
+    <div class="game-area" id="gameArea">
+      <div class="box" id="box"></div>
+    </div>
+
+    <button onclick="startGame()">Start / Restart Game</button>
+  </div>
+
+  <script>
+    const box = document.getElementById('box');
+    const gameArea = document.getElementById('gameArea');
+    const scoreText = document.getElementById('score');
+
+    const timerText = document.createElement('div');
+    timerText.style.marginBottom = '10px';
+    timerText.style.fontSize = '1.1rem';
+
+    const highScoreText = document.createElement('div');
+    highScoreText.style.marginBottom = '15px';
+    highScoreText.style.fontSize = '1.1rem';
+
+    document.querySelector('.game-container').insertBefore(timerText, gameArea);
+    document.querySelector('.game-container').insertBefore(highScoreText, gameArea);
+
+    const difficultySelect = document.createElement('select');
+    difficultySelect.innerHTML = `
+      <option value="1200">Easy</option>
+      <option value="800" selected>Medium</option>
+      <option value="450">Hard</option>
+    `;
+
+    difficultySelect.style.padding = '10px';
+    difficultySelect.style.borderRadius = '8px';
+    difficultySelect.style.marginBottom = '15px';
+
+    document.querySelector('.game-container').insertBefore(difficultySelect, gameArea);
+
+    let score = 0;
+    let timeLeft = 30;
+    let gameRunning = false;
+    let moveInterval;
+    let countdownInterval;
+
+    let highScore = localStorage.getItem('highScore') || 0;
+    highScoreText.textContent = '🏆 High Score Girlie: ' + highScore;
+
+    function moveBox() {
+      const maxX = gameArea.clientWidth - box.clientWidth;
+      const maxY = gameArea.clientHeight - box.clientHeight;
+
+      const randomX = Math.floor(Math.random() * maxX);
+      const randomY = Math.floor(Math.random() * maxY);
+
+      box.style.left = randomX + 'px';
+      box.style.top = randomY + 'px';
+    }
+
+    box.addEventListener('click', () => {
+      if (!gameRunning) return;
+
+      score++;
+      scoreText.textContent = 'Score: ' + score;
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        highScoreText.textContent = '🏆 High Score: ' + highScore;
+      }
+
+      moveBox();
+    });
+
+    function startGame() {
+      clearInterval(moveInterval);
+      clearInterval(countdownInterval);
+
+      score = 0;
+      timeLeft = 30;
+      gameRunning = true;
+
+      scoreText.textContent = 'Score: 0';
+      timerText.textContent = '⏳ Time Left: 30s';
+
+      moveBox();
+
+      const speed = Number(difficultySelect.value);
+
+      moveInterval = setInterval(moveBox, speed);
+
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerText.textContent = '⏳ Time Left: ' + timeLeft + 's';
+
+        if (timeLeft <= 0) {
+          clearInterval(moveInterval);
+          clearInterval(countdownInterval);
+          gameRunning = false;
+          alert('Game Over! Your score was ' + score);
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
